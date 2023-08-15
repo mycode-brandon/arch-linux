@@ -58,6 +58,24 @@ Reference: https://wiki.archlinux.org/title/Installation_guide
     ```
 
 ## Process:
+
+### 0. Download ISO, Flash USB
+- Downlaod the ISO using a straight download or torrent method: https://archlinux.org/download/
+- Copy the SHA256 key and paste into Notepad (if on Windows) or Linux text editor
+- On Windows, use PowerShell to confirm the signature and that your ISO is complete and hasn't been tampered with.
+```
+Get-FileHash .\archlinux-2023.08.01-x86_64.iso -Algorithm SHA256
+```
+```
+Algorithm       Hash                                                                   Path
+---------       ----                                                                   ----
+SHA256          3BF1287333DE5C26663B70A17CE7573F15DC60780B140CBBD1C720338C0ABAC5       C:\Users\...
+```
+- On Linux
+```
+sha256sum archlinux-2023.08.01-x86_64.iso
+```
+
 ### 1. First check internet connectivity with `ping`
 ```
 root@archiso~# ping google.com
