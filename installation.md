@@ -292,7 +292,7 @@ sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmnt
 - https://man.archlinux.org/man/pacstrap.8
 - The `-K` option: Initialize an empty pacman keyring in the target (implies -G).
 ```
-root@archiso~#  pacstrap -K /mnt base linux linux-firmware vim networkmanager sudo openssh (ucode) (base-devel)
+root@archiso~#  pacstrap -K /mnt base linux linux-firmware vim networkmanager sudo openssh intel-ucode base-devel
 ```
 - Also add amducode or intelucode
 
@@ -545,6 +545,7 @@ root@archiso~# reboot
 ```
 
 ### 13. Installing GPU drivers
+- check this guide out: https://github.com/lutris/docs/blob/master/InstallingDrivers.md
 ```
 
 ```
