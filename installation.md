@@ -82,6 +82,18 @@ root@archiso~# ping google.com
 ```
 
 - To setup wifi follow this guide for iwtcl: https://wiki.archlinux.org/title/Iwd#iwctl
+```
+[iwd]# device list
+[iwd]# device device set-property Powered on
+[iwd]# adapter adapter set-property Powered on
+[iwd]# station device scan
+[iwd]# station device get-networks
+[iwd]# station device connect SSID
+```
+- or use this command to connect:
+```
+iwctl --passphrase passphrase station device connect SSID
+```
 
 ### 2. Check disks available with `lsblk`
 ```
