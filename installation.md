@@ -289,8 +289,10 @@ sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmnt
 
 (ignoring ranking mirrors for now)
 - Use `pacstrap` to install linux onto the disk at `/mnt` alongside bare minimum packages needed
+- https://man.archlinux.org/man/pacstrap.8
+- The `-K` option: Initialize an empty pacman keyring in the target (implies -G).
 ```
-root@archiso~#  pacstrap -K /mnt base linux linux-firmware vim networkmanager sudo openssh
+root@archiso~#  pacstrap -K /mnt base linux linux-firmware vim networkmanager sudo openssh (ucode) (base-devel)
 ```
 - Also add amducode or intelucode
 
@@ -316,6 +318,7 @@ UUID=C9DC-E53F					/boot	vfat	rw,relatime..	0	?
 UUID=a79ba5f3-0ca9-44d7-b72b-d7f15405acbc	none	swap	rw,relatime	0	0
 ```
 ### 9. Section 3.2/3/4/5
+- Generate locale, keymap, hostname, hosts
 ```
 root@archiso~# arch-chroot /mnt
 [root@archiso /]# ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
@@ -340,16 +343,77 @@ KEYMAP=us
 [root@archiso /]# echo "my-arch" > /etc/hostname
 [root@archiso /]# cat /etc/hostname
 my-arch
+[root@archiso /]# vim /etc/hosts
+[root@archiso /]# cat /etc/hosts
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+127.0.0.1       localhost
+127.0.1.1       bobarch.localdomain     bobarch
+
+::1     localhost       ip6-localhost   ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
 ```
 
 ### 10. Section 3.6/7 
+- Enable file system trim on SSD using a timer service
 ```
-[root@archiso /]# mkinitcpio -P (No ERRORS)
+[root@archiso /]# systemctl enable fstrim.timer
+Created symlink /etc/systemd/system/timers.target.wants/fstrim.timer → /usr/lib/systemd/system/fstrim.timer.
+```
+- Enable 32 bit library support in `pacman.conf`
+```
+[root@archiso /]# vim /etc/pacman.conf
+```
+- Uncomment these two lines in `/etc/pacman.conf`:
+```
+[multilib]
+Include /etc/pacman.d/mirrorlist
+```
+- Download multilib package data
+```
+[root@archiso /]# sudo pacman -Sy
+:: Synchronizing package databases...
+ core                                                       130.3 KiB   236 KiB/s 00:01 [###################################################] 100%
+ extra                                                        8.3 MiB  12.1 MiB/s 00:01 [###################################################] 100%
+ multilib                                                   143.2 KiB  1860 KiB/s 00:00 [###################################################] 100%
+```
+
+- Set root password
+```
 [root@archiso /]# passwd
 ```
-{
-	enter password
-}
+- Add regular user:
+```
+[root@archiso /]# useradd -m -g users -G wheel,storage,power -s /bin/bash brandon
+```
+-m for creating home directory
+-G for adding wheel,power,storage groups
+-s for adding default bash at /bin/bash
+-g users for adding user to the users group
+
+- Set password for new user
+```
+[root@archiso /]# passwd brandon
+*enter password
+```
+- Edit sudo users group
+```
+[root@archiso /]# visudo
+```
+- Uncomment first `%wheel` line
+```
+%wheel ALL=(ALL:ALL) ALL
+```
+- Add this line to `visudo` at the bottom to enforce using the root password for sudo
+```
+Default rootpw
+```
+
+- Run `mkinitcpio` script
+```
+[root@archiso /]# mkinitcpio -P (No ERRORS)
+```
 
 
 ### 11. Section 3.8 (Installing systemd)
@@ -486,23 +550,7 @@ https://wiki.archlinux.org/title/GPT_fdisk
 
 
 
-Add User:
-```
-useradd -m -G wheel -s /bin/bash brandon
-```
--m for creating home directory
--G for adding wheel group
--s for adding default bash
-```
-passwd brandon
-*enter password
-```
-```
-visudo
-```
-{
-	uncomment first %wheel command
-}
+
 
 Enable Network
 ```
