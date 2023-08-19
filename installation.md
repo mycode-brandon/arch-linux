@@ -129,6 +129,10 @@ root@archiso~# loadkeys us
 root@archiso~# cat /sys/firmware/efi/fw_platform_size
 64
 ```
+- Setfont if needed:
+```
+root@archiso~# setfont ter-d32n
+```
 - Check to ensure your motherboard and cpu support UEFI (this can also be confirmed with the previous step)
 - Setup timezone and time/date information (this is only for the current live boot, we will redo this permanently later for the OS)
 - Use the command `timedatectl` to check and set time information: https://man.archlinux.org/man/timedatectl.1
@@ -138,6 +142,7 @@ root@archiso~# timedatectl set-ntp true
 ```
 
 ### 5. Section 1.9 of Installation Guide - Partition the disks
+
 - Check disks available with `lsblk`
 ```
 root@archiso~# lsblk
@@ -169,6 +174,87 @@ sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmnt
 
 ### 6. Section 1.10/11 of Installation Guide
 #### Reference: https://wiki.archlinux.org/title/File_systems
+
+#### 6.1 Optional encyrpted partition with LUKS: https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#LUKS_on_a_partition
+```
+root@archiso ~ # lsblk
+NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+loop0         7:0    0   673M  1 loop /run/archiso/airootfs
+sda           8:0    1  14.5G  0 disk
+└─sda1        8:1    1  14.5G  0 part
+nvme0n1     259:0    0 465.8G  0 disk
+├─nvme0n1p1 259:1    0     1G  0 part
+└─nvme0n1p2 259:2    0 464.8G  0 part
+```
+- Using nvme0n1p2 as root partition, use the `cryptsetup` command with optinos `-y` to verify password and `-v` for verbose
+```
+root@archiso ~ # cryptsetup -y -v luksFormat /dev/nvme0n1p2
+WARNING: Device /dev/nvme0n1p2 already contains a 'swap' superblock signature.
+
+WARNING!
+========
+This will overwrite data on /dev/nvme0n1p2 irrevocably.
+
+Are you sure? (Type 'yes' in capital letters): YES
+Enter passphrase for /dev/nvme0n1p2:
+Verify passphrase:
+Existing 'swap' superblock signature on device /dev/nvme0n1p2 will be wiped.
+Key slot 0 created.
+Command successful.
+cryptsetup -y -v luksFormat /dev/nvme0n1p2  18.43s user 0.49s system 103% cpu 18.220 total
+```
+- Open the encrypted partition, create the filesystem, and mount the partition properly:
+```
+root@archiso ~ # cryptsetup open /dev/nvme0n1p2 root
+Enter passphrase for /dev/nvme0n1p2:
+cryptsetup open /dev/nvme0n1p2 root  7.17s user 0.19s system 131% cpu 5.595 total
+root@archiso ~ # mkfs.ext4 /dev/mapper/root
+mke2fs 1.47.0 (5-Feb-2023)
+Creating filesystem with 121830144 4k blocks and 30457856 inodes
+Filesystem UUID: bf4342bd-52ca-470d-aca0-2164f829ea90
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+        4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968,
+        102400000
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (262144 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+root@archiso ~ # mount /dev/mapper/root /mnt
+root@archiso ~ # lsblk
+NAME        MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+loop0         7:0    0   673M  1 loop  /run/archiso/airootfs
+sda           8:0    1  14.5G  0 disk
+└─sda1        8:1    1  14.5G  0 part
+nvme0n1     259:0    0 465.8G  0 disk
+├─nvme0n1p1 259:1    0     1G  0 part
+└─nvme0n1p2 259:2    0 464.8G  0 part
+  └─root    254:0    0 464.7G  0 crypt /mnt
+```
+- Verify everything is working by closing the partition and unmounting, then redoing both:
+```
+root@archiso ~ # umount /mnt
+root@archiso ~ # cryptsetup close root
+root@archiso ~ # lsblk
+NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+loop0         7:0    0   673M  1 loop /run/archiso/airootfs
+sda           8:0    1  14.5G  0 disk
+└─sda1        8:1    1  14.5G  0 part
+nvme0n1     259:0    0 465.8G  0 disk
+├─nvme0n1p1 259:1    0     1G  0 part
+└─nvme0n1p2 259:2    0 464.8G  0 part
+root@archiso ~ # cryptsetup open /dev/nvme0n1p2 root
+Enter passphrase for /dev/nvme0n1p2:
+cryptsetup open /dev/nvme0n1p2 root  7.22s user 0.12s system 135% cpu 5.432 total
+root@archiso ~ # mount /dev/mapper/root /mnt
+```
+
+- Now create and mount the boot partition as normal. That one can't be encrypted
+
+#### 6.2 Regular partition without encryption
+
 - Format partitions using `mkfs` with this guide: https://man.archlinux.org/man/mkfs.8
 - Root partition with ext4 filesystem using `mkfs.ext4`: https://wiki.archlinux.org/title/Ext4
 ```
