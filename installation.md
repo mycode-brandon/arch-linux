@@ -407,12 +407,26 @@ Include /etc/pacman.d/mirrorlist
 ```
 - Add this line to `visudo` at the bottom to enforce using the root password for sudo
 ```
-Default rootpw
+Defaults rootpw
+```
+- check efivars
+```
+[root@archiso /]# mount -t efivarfs efivarfs /sys/firmware/efi/efivars/
+[root@archiso /]# ls /sys/firmware/efi/efivars/
 ```
 
-- Run `mkinitcpio` script
+### 10b
+- Modify `/etc/mkinitcpio.conf` for encryption
 ```
-[root@archiso /]# mkinitcpio -P (No ERRORS)
+[root@archiso /]# vim /etc/mkinitcpio.conf
+```
+- add `sd-encrypt` hook after udev or systemd hook.
+```
+HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block sd-encrypt filesystems fsck)
+```
+- Run `mkinitcpio` script with option `-P` for regenerating all the presets:
+```
+[root@archiso /]# mkinitcpio -P 
 ```
 
 
@@ -430,9 +444,7 @@ Copied "/usr/lib/systemd/boot/efi/systemd-bootx64.efi" to "/boot/EFI/systemd/sys
 Copied "/usr/lib/systemd/boot/efi/systemd-bootx64.efi" to "/boot/EFI/BOOT/BOOTX64.EFI".
 Random seed file /boot/loader/random-seed successfully written (32 bytes).
 Successfully initialized system token in EFI variable with 32 bytes.
-Created EFI boot entry "Linux Boot Manager".
-[root@archiso /]# 
-[root@archiso /]# 
+Created EFI boot entry "Linux Boot Manager". 
 ```
 - Now following: https://wiki.archlinux.org/title/Systemd-boot#Configuration
 - (Checking for correct path to make sure)
@@ -450,55 +462,64 @@ entries entries.srel loader.conf random-seed
 #timeout 3
 #console-mode keep
 ```
-- (creating a basic one based on example)
+- Create basic loader
 ```
 [root@archiso /]# cat /boot/loader/loader.conf
 default arch.conf
 timeout 4
 console-mode max
 editor no
-
+```
+- Create loader entry
+```
 [root@archiso /]# vi /boot/loader/entries/arch.conf
 [root@archiso /]# cat /boot/loader/entries/arch.conf
-title   Arch Linux
-linux   /vmlinuz-linux
-initrd  /initramfs-linux.img
-options root="LABEL=Arch OS" rw
+title Arch
+linux /vmlinuz-linux
+initrd /intel-ucode.img
+initrd /initramfs-linux.img
+options root=PARTUUID=UUID=bf4342bd-52ca-470d-aca0-2164f829ea90 rw
 ```
-- (initrd  /intel-ucode.img  omitted due to being in VM)
+- Install `intel-ucode` package
+```
+[root@archiso /]# pacman -S intel-ucode
+[root@archiso /]# ls /boot
+EFI  initramfs-linux-fallback.img  initramfs-linux.img  intel-ucode.img  loader  vmlinuz-linux
+```
+- Copy arch.conf to arch-fallback.conf and use linux-fallback.img
 ```
 [root@archiso /]# vi /boot/loader/entries/arch-fallback.conf
 [root@archiso /]# cat /boot/loader/entries/arch-fallback.conf
-title   Arch Linux (fallback initramfs)
-linux   /vmlinuz-linux
-initrd  /initramfs-linux-fallback.img
-options root="LABEL=Arch OS" rw
+title Arch (fallback initramfs)
+linux /vmlinuz-linux
+initrd /intel-ucode.img
+initrd /initramfs-linux-fallback.img
+options root=PARTUUID=UUID=bf4342bd-52ca-470d-aca0-2164f829ea90 rw
 
 [root@archiso /]# bootctl list
-      type: Boot Loader Specification Type #1 (.conf)
-     title: Arch Linux (default) (not reported/new)
-        id: arch.conf
-    source: /boot//loader/entries/arch.conf
-     linux: /boot//vmlinuz-linux
-    initrd: /boot//initramfs-linux.img
-   options: /root="LABEL=Arch OS" rw
+         type: Boot Loader Specification Type #1 (.conf)
+        title: Arch (default) (not reported/new)
+           id: arch.conf
+       source: /boot//loader/entries/arch.conf
+        linux: /boot//vmlinuz-linux
+       initrd: /boot//intel-ucode.img
+               /boot//initramfs-linux.img
+      options: root=PARTUUID=UUID=bf4342bd-52ca-470d-aca0-2164f829ea90 rw
 
-      type: Boot Loader Specification Type #1 (.conf)
-     title: Arch Linux (fallback initramfs) (not reported/new)
-        id: arch-fallback.conf
-    source: /boot//loader/entries/arch-fallback.conf
-     linux: /boot//vmlinuz-linux
-    initrd: /boot//initramfs-linux-fallback.img
-   options: /root="LABEL=Arch OS" rw
+         type: Boot Loader Specification Type #1 (.conf)
+        title: Arch (fallback initramfs) (not reported/new)
+           id: arch-fallback.conf
+       source: /boot//loader/entries/arch-fallback.conf
+        linux: /boot//vmlinuz-linux
+       initrd: /boot//intel-ucode.img
+               /boot//initramfs-linux-fallback.img
+      options: root=PARTUUID=UUID=bf4342bd-52ca-470d-aca0-2164f829ea90 rw
 ```
-- ***NOTE: This will not boot. This is a common error and the WIKI doesn't do a good job here.***
-- In the `arch.conf` and `arch-fallback.conf`, it uses `/root=LABEL....`, however we are using UUID's. This is misleading in the wiki.
-- We need to add the UUID instead of the label. Here is a simple command that automatically adds the UUID to each file:
+- Trick to find UUID of root partition, but doesn't work with LUKS encryption
 ```
 [root@archiso /]# echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/sda3) rw" >> /boot/loader/entries/arch.conf
 [root@archiso /]# echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/sda3) rw" >> /boot/loader/entries/arch-fallback.conf
 ```
-- **Make sure to delete the old line that includes the label**
 
 ### 12.Creating hook to update systemd (section 1.3.2.2)
 ```
@@ -523,19 +544,12 @@ Exec = /usr/bin/systemctl restart systemd-boot-update.service
 root@archiso~# reboot
 ```
 
+### 13. Installing GPU drivers
 ```
-[root@archiso /]# cat /boot/loader/entries/arch.conf
-title Arch Linux
-linux /vmlinuz-linux
-initrd /initramfs-linux.img
-options root=PARTUUID=23a1ac3a-12a1-4eab-9a8f-db0b7427d307 rw
 
-[root@archiso /]# cat /boot/loader/entries/arch-fallback.conf
-title Arch Linux (fallback initramfs)
-linux /vmlinuz-linux
-initrd /initramfs-linux-fallback.img
-options root=PARTUUID=23a1ac3a-12a1-4eab-9a8f-db0b7427d307 rw
 ```
+
+
 ### References
 
 https://man.archlinux.org/man/genfstab.8
