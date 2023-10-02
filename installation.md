@@ -83,37 +83,23 @@ root@archiso~# ping google.com
 
 - To setup wifi follow this guide for iwtcl: https://wiki.archlinux.org/title/Iwd#iwctl
 ```
+root@archiso~# iwctl
+```
+```
 [iwd]# device list
-[iwd]# device device set-property Powered on
-[iwd]# adapter adapter set-property Powered on
-[iwd]# station device scan
-[iwd]# station device get-networks
-[iwd]# station device connect SSID
+[iwd]# device <device> set-property Powered on
+[iwd]# adapter <adapter> set-property Powered on
+[iwd]# station <device> scan
+[iwd]# station <device> get-networks
+[iwd]# station <device> connect SSID
 ```
 - or use this command to connect:
 ```
-iwctl --passphrase passphrase station device connect SSID
+iwctl --passphrase <passphrase> station <device> connect <SSID>
 ```
 
-### 2. Check disks available with `lsblk`
-```
-root@archiso~# lsblk
-NAME    MAJ:MIN RM  SIZE    RO  TYPE    MOUNTPOINTS
-loop0   7:0     0   693.4M  1   loop    /run/archiso/airootfs
-sda     8:0     0   100G    0   disk    
-sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmr
-```
-### 3. Wipe disk you want to install on to start fresh with `gdisk`
-```
-root@archiso~# gdisk /dev/sda
-```
-- Interactive Actions: {
-expert mode (x), 
-zap (z), 
-yes
-}
 
-### 4. Section 1.5/6/7/8 of Installation Guide
+### 2. Set Font, Keymap, and Time
 - Load keyboard keymap. Default is US.
 - First, you can list the avaiable keymaps already available in the ISO image and wildcard search using asterisks
 - If searching for US based ones, the following command searches only those with `us` in the name and ending in `.map.gz`
@@ -138,10 +124,32 @@ root@archiso~# setfont ter-d32n
 - Use the command `timedatectl` to check and set time information: https://man.archlinux.org/man/timedatectl.1
 ```
 root@archiso~# timedatectl set-timezone America/Chicago
+```
+```
 root@archiso~# timedatectl set-ntp true
 ```
 
-### 5. Section 1.9 of Installation Guide - Partition the disks
+
+### 3. Disk Setup
+```
+root@archiso~# lsblk
+NAME    MAJ:MIN RM  SIZE    RO  TYPE    MOUNTPOINTS
+loop0   7:0     0   693.4M  1   loop    /run/archiso/airootfs
+sda     8:0     0   100G    0   disk    
+sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmr
+```
+- Wipe disk you want to install on to start fresh with `gdisk`
+```
+root@archiso~# gdisk /dev/sda
+```
+- Interactive Actions: {
+expert mode (x), 
+zap (z), 
+yes
+}
+
+
+### 4. Section 1.9 of Installation Guide - Partition the disks
 
 - Check disks available with `lsblk`
 ```
