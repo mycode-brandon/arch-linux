@@ -19,7 +19,7 @@ ebtables : setting up NAT
 bridge-utils : bridge interfaces
 openbsd-netcat : enables remote management over ssh
 
-'''
+```
 sudo pacman -Sy \
 qemu \
 dhclient \
@@ -32,12 +32,23 @@ ebtables \
 virt-install \
 virt-manager \
 bridge-utils
-'''
+```
 
 https://developers.redhat.com/blog/2020/08/18/iptables-the-two-variants-and-their-relationship-with-nftables#
 
-'''
+```
 sudo systemctl status libvirtd
 sudo systemctl start libvirtd
 sudo systemctl enable libvirtd
-'''
+```
+
+Permissions
+
+qemu:///system
+qemu:///user 
+
+```
+mkdir ~/.config/libvirt
+sudo cp -v /etc/libvirt/libvirt.conf ~/.config/libvirt/
+sudo chown brandon:wheel ~/.config/libvirt/libvirt.conf
+```
