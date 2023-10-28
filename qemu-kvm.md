@@ -67,3 +67,5 @@ add user to libvirt group
 
 douhble check with `getent group libvirt` to make sure user is there.
 
+download iso and double check with `sha256sum <isoname>`
+
