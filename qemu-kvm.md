@@ -73,3 +73,9 @@ download iso and double check with `sha256sum <isoname>`
 issues:
 
 may need to start network: `sudo virsh net-start default`
+
+for windows:
+
+`sudo pacman -S ovmf swtpm`
+
+add tpm 2.0 device, add virtio drivers as cdrom. change chipset to UEFI secboot.
