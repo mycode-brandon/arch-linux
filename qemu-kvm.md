@@ -69,3 +69,7 @@ douhble check with `getent group libvirt` to make sure user is there.
 
 download iso and double check with `sha256sum <isoname>`
 
+
+issues:
+
+may need to start network: `sudo virsh net-start default`
