@@ -52,3 +52,18 @@ mkdir ~/.config/libvirt
 sudo cp -v /etc/libvirt/libvirt.conf ~/.config/libvirt/
 sudo chown brandon:wheel ~/.config/libvirt/libvirt.conf
 ```
+
+edit `libvirt.conf`
+
+`vim ~/.config/libvirt/libvirt.conf`
+
+uncomment out `uri_default = "qemu:///system"`
+
+`cat /etc/group` to list all groups and check to make sure libvirt group is available.
+
+add user to libvirt group
+
+`usermod -aG libvirt brandon` or `sudo gpasswd -a brandon libvirt`
+
+douhble check with `getent group libvirt` to make sure user is there.
+
