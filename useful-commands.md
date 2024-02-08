@@ -49,6 +49,13 @@ All man pages can be found here: https://man.archlinux.org/man/
   - https://man.archlinux.org/man/dd.1
 - `mkfs` - build a Linux filesystem
   - https://man.archlinux.org/man/mkfs.8
+ 
+### Network, WiFi, and Internet
+
+- `ping`
+- `curl`
+- `ip`
+- `ufw`
 
 ### Pacman package manager
 
