@@ -20,6 +20,12 @@ All man pages can be found here: https://man.archlinux.org/man/
   - https://man.archlinux.org/man/mkdir.1
 - `>` - Push to file
   - ex: `> test.txt` will create an empty test.txt file
+- `mv` - move (rename) files
+  - https://man.archlinux.org/man/mv.1
+- `cp` - copy files and directories
+  - https://man.archlinux.org/man/cp.1
+- `rm`- remove files or directories
+  - https://man.archlinux.org/man/rm.1
 
 ### Printing to Screen and to Files
 
@@ -31,4 +37,22 @@ All man pages can be found here: https://man.archlinux.org/man/
 - `cat` - concatenate files and print on the standard output (similar to `echo`, but from a file)
   - ex: `cat test.txt` would produce `hello` on the next terminal line if test.txt had one line with "hello" as the text.
   - `>` : Push a file into another file. ex: `cat test.txt > test2.txt` will make text2.txt have the exact same contents as text.txt
-  - `>>` : Add onto another file. ex: `cat test.txt >> test2.txt` will add test.txt to the bottom of test2.txt
+  - `>>` : Add onto another file. ex: `cat test.txt >> test2.txt` will add test.txt to the bottom of test2.txt\
+
+### Filesystem
+
+- `lsblk` - list block devices (hard drive, ssd, usb, etc.)
+  - https://man.archlinux.org/man/lsblk.8
+- `mount` - mount filesystems, devices, usb, extra hard drives, etc
+  - https://man.archlinux.org/man/mount.8
+- `dd` - duplicate/destroy disk, image file or disk, convert and copy a file, flash to usb, etc
+  - https://man.archlinux.org/man/dd.1
+- `mkfs` - build a Linux filesystem
+  - https://man.archlinux.org/man/mkfs.8
+
+### Pacman package manager
+
+- `pacman`
+  - `-S`
+  - `-R`
+  - `-Q`
