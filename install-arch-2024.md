@@ -32,7 +32,7 @@ Reference: https://wiki.archlinux.org/title/Installation_guide
 - `root@archiso~# timedatectl set-timezone America/Chicago`
 - `root@archiso~# timedatectl set-ntp true`
 
-### Disk Setup
+### Disk Partition
 
 - Determine existing disk setup:
   - `root@archiso~# lsblk`
@@ -72,3 +72,33 @@ sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmr
   - `Size in sectors or...: <Enter>` - enter "<Enter>" to use the rest of the disk. Can choose to create a partition for `/home` if wanted.
   - `Hex code or GUID(...): 8300` - Enter "8300" for Root partition
   - `Enter new partition name...: swap` - Type "root" to name root partition
+- Write and Quit
+  - Select `Write` using left/right arrow keys, press <Enter>
+  - Select `Quit` using left/right arrow keys, press <Enter>
+
+### Disk Formatting and Mounting Directories
+
+- Make filesystem for root partition
+  - `root@archiso~# mkfs.ext4 /dev/sda3`
+- Make filesystem for boot partition
+  - `root@archiso~# mkfs.fat -F 32 /dev/sda1`
+- Make SWAP filesystem and turn SWAP on
+  - `root@archiso~# mkswap /dev/sda2`
+  - `root@archiso~# swapon /dev/sda2`
+
+  - Mount the root and boot directories:
+    - `root@archiso~# mount /dev/sda3 /mnt`
+    - `root@archiso~# mount --mkdir /dev/sda1 /mnt/boot`
+    - **NOTE: this order must be maintained. Mount /mnt before creating /mnt/boot, otherwise `genfstab` will have issues.**
+
+Double check filesystem with `lsblk -o name,size,type,mountpoint,partlabel`
+```
+root@archiso~# lsblk
+NAME    SIZE    TYPE  MOUNTPOINTS            PARTLABEL
+loop0   693.4M  loop  /run/archiso/airootfs  
+sda     100G    disk    
+|-sda1  1G      part	/mnt/boot              boot
+|-sda2  8G      part	[SWAP]                 swap
+|-sda3  91G     part	/mnt                   root
+sr0     813.3M  rom   /run/archiso/bootmnt
+```
