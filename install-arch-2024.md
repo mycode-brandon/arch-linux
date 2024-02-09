@@ -103,13 +103,48 @@ sda     100G    disk
 sr0     813.3M  rom   /run/archiso/bootmnt
 ```
 
-### Select Mirrors and Pacstrap the system
+### Select Mirrors and Pacstrap the system, generate FSTAB file
 
 - You can opt to skip selecting mirrors
-
 - Pacstrap the new install:
   - `root@archiso~#  pacstrap -K /mnt base linux linux-firmware neovim networkmanager sudo openssh intel-ucode base-devel man-db man-pages`
-  - Choose whatever *-ucdoe you have, AMD or Intel.
+  - Choose whatever *-ucode you have, AMD or Intel.
   - Ensure you have a network package with dns, wifi, and whatever capabilties you need. Network manager should take care of all that.
   - **NOTE: the `-K` option for `pacstrap` is important, packages may not download properly without that.**
   - Don't forget the target directory: `/mnt`
+- Next, generate the filesystem table `fstab` with `genfstab`
+  - `genfstab -U /mnt >> /mnt/etc/fstab`
+
+### Configure Arch
+
+- Change into the newly installed directory `/mnt` using `arch-chroot /mnt`
+  - `root@archiso~# arch-chroot /mnt`
+- Set Timezone info
+  - `[root@archiso /]# ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime`
+- Set Clock
+  - `[root@archiso /]# hwclock --systohc --utc`
+- Set Locale
+  - `[root@archiso /]# nvim /etc/locale.gen`
+  - Uncomment out `en_US.UTF-8 UTF-8` line in the file
+- Generate locale using `locale-gen`
+  - `[root@archiso /]# locale-gen`
+- Set Language
+  - `[root@archiso /]# echo "LANG=en_US.UTF-8" > /etc/locale.conf`
+- Set Keymap
+  - `[root@archiso /]# echo "KEYMAP=us" > /etc/vconsole.conf`
+- Set Hostname
+  - `[root@archiso /]# echo "my-arch" > /etc/hostname`
+- Setup hosts file
+  - `[root@archiso /]# nvim /etc/hosts`
+
+Example:
+```
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+127.0.0.1       localhost
+127.0.1.1       my-arch.localdomain     my-arch
+
+::1     localhost       ip6-localhost   ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+```
