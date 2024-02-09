@@ -148,3 +148,22 @@ Example:
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ```
+- Setup SSD file system trim service:
+  - `[root@archiso /]# systemctl enable fstrim.timer`
+- Enable 32-bit support with `multilib` Repository
+  - `[root@archiso /]# nvim /etc/pacman.conf`
+  - Uncomment lines `[multilib]` and `Include /etc/pacman.d/mirrorlist`
+  - Upgrade system:
+    - `[root@archiso /]# pacman -Sy`
+- Set root password:
+  - `[root@archiso /]# passwd`
+- Add regular user:
+  - `[root@archiso /]# useradd -m -g users -G wheel,storage,power -s /bin/bash <username>`
+- Set password:
+  - `[root@archiso /]# passwd <username>`
+- Add user to sudo:
+  - `[root@archiso /]# EDITOR=/usr/bin/nvim visudo`
+  - Uncomment first `%wheel` line e.g. `%wheel ALL=(ALL:ALL) ALL`
+  - Add `Defaults rootpw` to end of file *this ensures root password is required for sudo commands
+- Run `mkinitcpio -P`
+  - `[root@archiso /]# mkinitcpio -P`
