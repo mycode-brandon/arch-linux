@@ -93,7 +93,7 @@ sr0     11:0    1   813.3M  0   rom     /run/archiso/bootmr
 
 Double check filesystem with `lsblk -o name,size,type,mountpoint,partlabel`
 ```
-root@archiso~# lsblk
+root@archiso~# lsblk -o name,size,type,mountpoint,partlabel
 NAME    SIZE    TYPE  MOUNTPOINTS            PARTLABEL
 loop0   693.4M  loop  /run/archiso/airootfs  
 sda     100G    disk    
@@ -102,3 +102,14 @@ sda     100G    disk
 |-sda3  91G     part	/mnt                   root
 sr0     813.3M  rom   /run/archiso/bootmnt
 ```
+
+### Select Mirrors and Pacstrap the system
+
+- You can opt to skip selecting mirrors
+
+- Pacstrap the new install:
+  - `root@archiso~#  pacstrap -K /mnt base linux linux-firmware neovim networkmanager sudo openssh intel-ucode base-devel man-db man-pages`
+  - Choose whatever *-ucdoe you have, AMD or Intel.
+  - Ensure you have a network package with dns, wifi, and whatever capabilties you need. Network manager should take care of all that.
+  - **NOTE: the `-K` option for `pacstrap` is important, packages may not download properly without that.**
+  - Don't forget the target directory: `/mnt`
